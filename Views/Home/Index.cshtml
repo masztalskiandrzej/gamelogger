@@ -1,0 +1,175 @@
+@model GameLogger.Models.GameListViewModel
+@{
+    ViewData["Title"] = "GameLogger - Panel Główny";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1 class="hero-title">WITAJ W GAMELOGGER</h1>
+    <p class="hero-subtitle">Twoja osobista biblioteka gier z ocenami i recenzjami</p>
+    <div class="hero-actions">
+        <button class="gaming-btn primary" onclick="openModal('gameModal')">
+            <i class="fas fa-plus"></i> Dodaj Grę
+        </button>
+        <button class="gaming-btn secondary" onclick="scrollToGames()">
+            <i class="fas fa-gamepad"></i> Przeglądaj Bibliotekę
+        </button>
+    </div>
+</section>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="fas fa-gamepad"></i>
+        </div>
+        <div class="stat-label">Ogrymane Gry</div>
+        <div class="stat-value">@Model.Games.Count</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-label">Średnia Ocena</div>
+        <div class="stat-value">
+            @(Model.Games.Any() ? Model.Games.Average(g => g.Rating).ToString("F1") : "0.0")
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-label">Całkowity Czas</div>
+        <div class="stat-value">
+            @Model.Games.Sum(g => g.PlaytimeHours)<span class="stat-unit">h</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon pink">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="stat-label">Ulubiony Gatunek</div>
+        <div class="stat-value" style="font-size: 1.5rem;">
+            @(Model.Games.GroupBy(g => g.Genre).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key ?? "Brak")
+        </div>
+    </div>
+</div>
+
+<!-- Games Section -->
+<section class="games-section" id="gamesSection">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-book"></i>
+            Twoja Biblioteka Gier
+        </h2>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <select class="gaming-input" style="width: auto;" onchange="filterByGenre(this.value)">
+                <option value="">Wszystkie Gatunki</option>
+                @foreach (var genre in Model.Genres.Distinct())
+                {
+                    <option value="@genre">@genre</option>
+                }
+            </select>
+            <select class="gaming-input" style="width: auto;" onchange="sortGames(this.value)">
+                <option value="date">Sortuj: Data</option>
+                <option value="rating">Sortuj: Ocena</option>
+                <option value="title">Sortuj: Tytuł</option>
+            </select>
+        </div>
+    </div>
+
+    @if (Model.Games.Any())
+    {
+        <div class="games-grid">
+            @foreach (var game in Model.Games)
+            {
+                <div class="game-card" data-game-id="@game.Id" data-rating="@game.Rating" data-genre="@game.Genre" data-date="@game.DatePlayed.ToString("o")">
+                    @if (!string.IsNullOrEmpty(game.CoverImageUrl))
+                    {
+                        <img src="@game.CoverImageUrl" alt="@game.Title" class="game-cover" onerror="this.parentElement.innerHTML='<div class=\'game-cover-placeholder\'><i class=\'fas fa-gamepad\'></i></div>'">
+                    }
+                    else
+                    {
+                        <div class="game-cover-placeholder">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                    }
+                    <div class="game-info">
+                        <h3 class="game-title">@game.Title</h3>
+                        <div class="game-meta">
+                            @if (!string.IsNullOrEmpty(game.Genre))
+                            {
+                                <span class="game-tag">@game.Genre</span>
+                            }
+                            @if (!string.IsNullOrEmpty(game.Platform))
+                            {
+                                <span class="game-tag">@game.Platform</span>
+                            }
+                        </div>
+                        <div class="game-rating">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Ceiling(game.Rating / 2.0))
+                                    {
+                                        <i class="fas fa-star filled"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-star empty"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="rating-number">@game.Rating/10</span>
+                        </div>
+                        <div class="game-actions">
+                            <button class="gaming-btn secondary" onclick="showGameDetails(@game.Id); event.stopPropagation();">
+                                <i class="fas fa-eye"></i> Szczegóły
+                            </button>
+                            <button class="gaming-btn danger" onclick="deleteGame(@game.Id, '@game.Title.Replace("'", "\\'")'); event.stopPropagation();">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-gamepad"></i>
+            <h3>Brak gier w bibliotece</h3>
+            <p>Dodaj swoją pierwszą grę, aby rozpocząć przygodę z GameLogger!</p>
+            <button class="gaming-btn primary" onclick="openModal('gameModal')">
+                <i class="fas fa-plus"></i> Dodaj Pierwszą Grę
+            </button>
+        </div>
+    }
+</section>
+
+<!-- Quick Stats Modal Trigger (hidden, for nav link) -->
+<div id="statsContent" style="display: none;">
+    <!-- Stats will be loaded here -->
+</div>
+
+<script>
+    function scrollToGames() {
+        document.getElementById('gamesSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initialize animations on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add stagger animation to game cards
+        const cards = document.querySelectorAll('.game-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.05}s`;
+        });
+
+        // Add stagger animation to stat cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+</script>

@@ -1,0 +1,35 @@
+@model GameLogger.Models.StatsViewModel
+
+<div class="stats-detail">
+    <h4 style="margin-bottom: 1rem; color: var(--accent-primary);">Statystyki Detaliczne</h4>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 10px;">
+            <small style="color: var(--text-secondary);">Najwyżej oceniana gra</small>
+            <div style="font-weight: 600; color: var(--text-primary);">
+                @(Model.HighestRatedGame?.Title ?? "Brak")
+            </div>
+            @if (Model.HighestRatedGame != null)
+            {
+                <div style="color: var(--accent-primary);">@Model.HighestRatedGame.Rating/10</div>
+            }
+        </div>
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 10px;">
+            <small style="color: var(--text-secondary);">Ostatnio grane</small>
+            <div style="font-weight: 600; color: var(--text-primary);">
+                @(Model.RecentlyPlayed?.Title ?? "Brak")
+            </div>
+            @if (Model.RecentlyPlayed != null)
+            {
+                <div style="color: var(--accent-secondary);">@Model.RecentlyPlayed.DatePlayed.ToString("dd.MM.yyyy")</div>
+            }
+        </div>
+    </div>
+
+    <div style="background: var(--bg-card); padding: 1rem; border-radius: 10px;">
+        <small style="color: var(--text-secondary);">Ulubiony gatunek</small>
+        <div style="font-size: 1.25rem; font-weight: 600; color: var(--accent-purple);">
+            @(Model.MostPlayedGenre ?? "Brak danych")
+        </div>
+    </div>
+</div>

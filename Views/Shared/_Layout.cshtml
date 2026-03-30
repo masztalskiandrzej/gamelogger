@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GameLogger</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/GameLogger.styles.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="grid-lines"></div>
+        <div class="particles">
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="gaming-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-gamepad"></i>
+                <span class="brand-text">GAME<span class="brand-accent">LOGGER</span></span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-section="dashboard">
+                        <i class="fas fa-th-large"></i>
+                        <span>Panel Główny</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="add">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Dodaj Grę</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="library">
+                        <i class="fas fa-book"></i>
+                        <span>Biblioteka</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="stats">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Statystyki</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="nav-user">
+                <div class="user-avatar">
+                    <i class="fas fa-user-astronaut"></i>
+                </div>
+                <span class="user-name">Gamer</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        @RenderBody()
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="gameModal">
+        <div class="gaming-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Dodaj Nową Grę</h3>
+                <button class="modal-close" onclick="closeModal('gameModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form asp-action="AddGame" method="post" class="modal-body" id="addGameForm">
+                <div class="form-group">
+                    <label class="form-label">Tytuł Gry</label>
+                    <input type="text" name="Title" class="gaming-input" placeholder="Wprowadź tytuł gry..." required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Gatunek</label>
+                        <select name="Genre" class="gaming-input">
+                            <option value="">Wybierz...</option>
+                            <option value="RPG">RPG</option>
+                            <option value="Action">Action</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Strategy">Strategy</option>
+                            <option value="FPS">FPS</option>
+                            <option value="Racing">Racing</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Indie">Indie</option>
+                            <option value="Horror">Horror</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Platforma</label>
+                        <select name="Platform" class="gaming-input">
+                            <option value="">Wybierz...</option>
+                            <option value="PC">PC</option>
+                            <option value="PlayStation 5">PlayStation 5</option>
+                            <option value="Xbox Series X">Xbox Series X</option>
+                            <option value="Nintendo Switch">Nintendo Switch</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Ocena (1-10)</label>
+                        <div class="rating-input">
+                            <input type="range" name="Rating" min="1" max="10" value="5" class="rating-slider" id="ratingSlider">
+                            <span class="rating-value" id="ratingValue">5</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Czas Gry (godz.)</label>
+                        <input type="number" name="PlaytimeHours" class="gaming-input" placeholder="0" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL Okładki</label>
+                    <input type="url" name="CoverImageUrl" class="gaming-input" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Opis / Recenzja</label>
+                    <textarea name="Review" class="gaming-textarea" rows="4" placeholder="Podziel się swoją opinią o grze..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="gaming-btn secondary" onclick="closeModal('gameModal')">
+                        <i class="fas fa-times"></i> Anuluj
+                    </button>
+                    <button type="submit" class="gaming-btn primary">
+                        <i class="fas fa-save"></i> Zapisz Grę
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Game Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="gaming-modal detail-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="detailTitle">Szczegóły Gry</h3>
+                <button class="modal-close" onclick="closeModal('detailModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="detailContent">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
