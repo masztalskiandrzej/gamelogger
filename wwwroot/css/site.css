@@ -643,6 +643,66 @@ body {
 }
 
 /* ========================================
+   STATUS BADGES
+   ======================================== */
+
+.status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.status-badge.backlog {
+    background: rgba(0, 212, 255, 0.9);
+    color: var(--bg-primary);
+}
+
+.status-badge.playing {
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+}
+
+.status-badge.completed {
+    background: rgba(0, 255, 136, 0.9);
+    color: var(--bg-primary);
+}
+
+/* Status-specific card styles */
+.backlog-card {
+    border-left: 3px solid var(--accent-secondary);
+}
+
+.playing-card {
+    border-left: 3px solid var(--accent-purple);
+}
+
+.completed-card {
+    border-left: 3px solid var(--accent-primary);
+}
+
+/* ========================================
+   COVER SEARCH
+   ======================================== */
+
+.cover-search {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.cover-search button {
+    white-space: nowrap;
+}
+
+/* ========================================
    MODAL
    ======================================== */
 

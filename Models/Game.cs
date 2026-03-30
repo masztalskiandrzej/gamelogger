@@ -8,8 +8,10 @@ namespace GameLogger.Models
         public int Rating { get; set; } // 1-10
         public string? Review { get; set; }
         public DateTime DatePlayed { get; set; }
+        public DateTime DateAdded { get; set; } = DateTime.Now;
         public string? Genre { get; set; }
         public string? Platform { get; set; }
         public int PlaytimeHours { get; set; }
+        public GameStatus Status { get; set; } = GameStatus.Backlog;
     }
 }

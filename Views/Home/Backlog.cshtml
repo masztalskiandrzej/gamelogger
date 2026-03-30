@@ -1,0 +1,180 @@
+@model GameLogger.Models.GameListViewModel
+@{
+    ViewData["Title"] = "GameLogger - Backlog";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1 class="hero-title">BACKLOG GIER</h1>
+    <p class="hero-subtitle">Lista gier "do ogrania" - planuj kolejne przygody</p>
+    <div class="hero-actions">
+        <button class="gaming-btn primary" onclick="openModal('gameModal')">
+            <i class="fas fa-plus"></i> Dodaj do Backlogu
+        </button>
+    </div>
+</section>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(0, 212, 255, 0.15); color: var(--accent-secondary);">
+            <i class="fas fa-bookmark"></i>
+        </div>
+        <div class="stat-label">W Backlogu</div>
+        <div class="stat-value">@Model.BacklogGames.Count</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="fas fa-gamepad"></i>
+        </div>
+        <div class="stat-label">W trakcie gry</div>
+        <div class="stat-value">@Model.PlayingGames.Count</div>
+    </div>
+</div>
+
+<!-- Backlog Section -->
+<section class="games-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-bookmark" style="color: var(--accent-secondary);"></i>
+            Lista Gier do Ogrania
+        </h2>
+    </div>
+
+    @if (Model.BacklogGames.Any())
+    {
+        <div class="games-grid">
+            @foreach (var game in Model.BacklogGames)
+            {
+                <div class="game-card backlog-card" data-game-id="@game.Id" data-date-added="@game.DateAdded.ToString("o")">
+                    <div class="status-badge backlog">BACKLOG</div>
+                    @if (!string.IsNullOrEmpty(game.CoverImageUrl))
+                    {
+                        <img src="@game.CoverImageUrl" alt="@game.Title" class="game-cover" onerror="this.parentElement.innerHTML='<div class=\'game-cover-placeholder\'><i class=\'fas fa-gamepad\'></i></div>'">
+                    }
+                    else
+                    {
+                        <div class="game-cover-placeholder">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                    }
+                    <div class="game-info">
+                        <h3 class="game-title">@game.Title</h3>
+                        <div class="game-meta">
+                            @if (!string.IsNullOrEmpty(game.Genre))
+                            {
+                                <span class="game-tag">@game.Genre</span>
+                            }
+                            @if (!string.IsNullOrEmpty(game.Platform))
+                            {
+                                <span class="game-tag">@game.Platform</span>
+                            }
+                        </div>
+                        <div class="game-meta" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                            <i class="fas fa-calendar-plus"></i> Dodano: @game.DateAdded.ToString("dd.MM.yyyy")
+                        </div>
+                        <div class="game-actions">
+                            <button class="gaming-btn primary" onclick="changeGameStatus(@game.Id, 'Playing', event);">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button class="gaming-btn secondary" onclick="openEditModal(@game.Id); event.stopPropagation();">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="gaming-btn danger" onclick="deleteGame(@game.Id, '@game.Title.Replace("'", "\\'")'); event.stopPropagation();">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-bookmark"></i>
+            <h3>Twój backlog jest pusty</h3>
+            <p>Dodaj gry, które planujesz zagrać w przyszłości!</p>
+            <button class="gaming-btn primary" onclick="openModal('gameModal')">
+                <i class="fas fa-plus"></i> Dodaj Pierwszą Grę
+            </button>
+        </div>
+    }
+</section>
+
+@if (Model.PlayingGames.Any())
+{
+    <!-- Currently Playing Section -->
+    <section class="games-section" style="margin-top: 3rem;">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-gamepad" style="color: var(--accent-purple);"></i>
+                Obecnie Gram
+            </h2>
+        </div>
+        <div class="games-grid">
+            @foreach (var game in Model.PlayingGames)
+            {
+                <div class="game-card playing-card" data-game-id="@game.Id">
+                    <div class="status-badge playing">W TRAKCIE</div>
+                    @if (!string.IsNullOrEmpty(game.CoverImageUrl))
+                    {
+                        <img src="@game.CoverImageUrl" alt="@game.Title" class="game-cover" onerror="this.parentElement.innerHTML='<div class=\'game-cover-placeholder\'><i class=\'fas fa-gamepad\'></i></div>'">
+                    }
+                    else
+                    {
+                        <div class="game-cover-placeholder">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                    }
+                    <div class="game-info">
+                        <h3 class="game-title">@game.Title</h3>
+                        <div class="game-meta">
+                            @if (!string.IsNullOrEmpty(game.Genre))
+                            {
+                                <span class="game-tag">@game.Genre</span>
+                            }
+                        </div>
+                        <div class="game-actions">
+                            <button class="gaming-btn primary" onclick="changeGameStatus(@game.Id, 'Completed', event);">
+                                <i class="fas fa-check"></i> Ukończ
+                            </button>
+                            <button class="gaming-btn secondary" onclick="changeGameStatus(@game.Id, 'Backlog', event);">
+                                <i class="fas fa-pause"></i> Wstrzymaj
+                            </button>
+                            <button class="gaming-btn secondary" onclick="openEditModal(@game.Id); event.stopPropagation();">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="gaming-btn danger" onclick="deleteGame(@game.Id, '@game.Title.Replace("'", "\\'")'); event.stopPropagation();">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<script>
+    function changeGameStatus(gameId, newStatus, event) {
+        if (event) event.stopPropagation();
+
+        fetch('/Home/ChangeStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${gameId}&newStatus=${newStatus}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            showNotification('Błąd podczas zmiany statusu', 'error');
+        });
+    }
+</script>

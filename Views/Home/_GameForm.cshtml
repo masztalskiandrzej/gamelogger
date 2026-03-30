@@ -1,0 +1,139 @@
+@model GameLogger.Models.Game
+
+@{
+    var isEdit = Model?.Id > 0;
+}
+
+<form asp-action="@(isEdit ? "EditGame" : "AddGame")" method="post" class="modal-body game-form" id="@(isEdit ? "editGameForm" : "addGameForm")">
+    @if (isEdit)
+    {
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <input type="hidden" name="DateAdded" value="@Model.DateAdded.ToString("o")" />
+        <input type="hidden" name="DatePlayed" value="@Model.DatePlayed.ToString("o")" />
+    }
+
+    <div class="form-group">
+        <label class="form-label">Status Gry</label>
+        <select name="Status" class="gaming-input">
+            <option value="Backlog" selected="@(Model?.Status == GameStatus.Backlog)">📋 Backlog (do ogrania)</option>
+            <option value="Playing" selected="@(Model?.Status == GameStatus.Playing)">🎮 W trakcie gry</option>
+            <option value="Completed" selected="@(Model?.Status == GameStatus.Completed)">🏆 Ukończona</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Tytuł Gry</label>
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="text" name="Title" class="gaming-input" placeholder="Wprowadź tytuł gry..." required value="@(Model?.Title ?? "")" id="gameTitleInput">
+            <button type="button" class="gaming-btn secondary" onclick="searchGameCover()" title="Pobierz okładkę z IGDB">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        <small style="color: var(--text-muted); font-size: 0.8rem;">Kliknij ikonę lupy, aby wyszukać okładkę automatycznie</small>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label">Gatunek</label>
+            <select name="Genre" class="gaming-input">
+                <option value="">Wybierz...</option>
+                <option value="RPG" selected="@(Model?.Genre == "RPG")">RPG</option>
+                <option value="Action" selected="@(Model?.Genre == "Action")">Action</option>
+                <option value="Adventure" selected="@(Model?.Genre == "Adventure")">Adventure</option>
+                <option value="Strategy" selected="@(Model?.Genre == "Strategy")">Strategy</option>
+                <option value="FPS" selected="@(Model?.Genre == "FPS")">FPS</option>
+                <option value="Racing" selected="@(Model?.Genre == "Racing")">Racing</option>
+                <option value="Sports" selected="@(Model?.Genre == "Sports")">Sports</option>
+                <option value="Indie" selected="@(Model?.Genre == "Indie")">Indie</option>
+                <option value="Horror" selected="@(Model?.Genre == "Horror")">Horror</option>
+                <option value="Action RPG" selected="@(Model?.Genre == "Action RPG")">Action RPG</option>
+                <option value="Roguelike" selected="@(Model?.Genre == "Roguelike")">Roguelike</option>
+                <option value="Simulation" selected="@(Model?.Genre == "Simulation")">Simulation</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Platforma</label>
+            <select name="Platform" class="gaming-input">
+                <option value="">Wybierz...</option>
+                <option value="PC" selected="@(Model?.Platform == "PC")">PC</option>
+                <option value="PlayStation 5" selected="@(Model?.Platform == "PlayStation 5")">PlayStation 5</option>
+                <option value="Xbox Series X" selected="@(Model?.Platform == "Xbox Series X")">Xbox Series X</option>
+                <option value="Xbox Series S" selected="@(Model?.Platform == "Xbox Series S")">Xbox Series S</option>
+                <option value="Nintendo Switch" selected="@(Model?.Platform == "Nintendo Switch")">Nintendo Switch</option>
+                <option value="PlayStation 4" selected="@(Model?.Platform == "PlayStation 4")">PlayStation 4</option>
+                <option value="Xbox One" selected="@(Model?.Platform == "Xbox One")">Xbox One</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label">Ocena (1-10)</label>
+            <div class="rating-input">
+                <input type="range" name="Rating" min="1" max="10" value="@(Model?.Rating > 0 ? Model.Rating : 5)" class="rating-slider rating-slider-form" id="ratingSlider">
+                <span class="rating-value" id="ratingValue">@(Model?.Rating > 0 ? Model.Rating : 5)</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Czas Gry (godz.)</label>
+            <input type="number" name="PlaytimeHours" class="gaming-input" placeholder="0" min="0" value="@(Model?.PlaytimeHours > 0 ? Model.PlaytimeHours : 0)">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">URL Okładki</label>
+        <input type="url" name="CoverImageUrl" class="gaming-input" placeholder="https://..." value="@(Model?.CoverImageUrl ?? "")" id="coverImageUrlInput">
+        <div id="coverPreview" style="margin-top: 0.5rem; display: none;">
+            <img src="" alt="Preview" style="max-width: 150px; border-radius: 8px; border: 2px solid var(--accent-primary);">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Opis / Recenzja</label>
+        <textarea name="Review" class="gaming-textarea" rows="4" placeholder="Podziel się swoją opinią o grze...">@(Model?.Review ?? "")</textarea>
+    </div>
+
+    <div class="modal-actions">
+        <button type="button" class="gaming-btn secondary" onclick="closeModal('gameModal')">
+            <i class="fas fa-times"></i> Anuluj
+        </button>
+        <button type="submit" class="gaming-btn primary">
+            <i class="fas fa-save"></i> @(isEdit ? "Zapisz Zmiany" : "Zapisz Grę")
+        </button>
+    </div>
+</form>
+
+<script>
+    // Initialize rating slider for this form
+    (function() {
+        const slider = document.querySelector('#ratingSlider');
+        const valueDisplay = document.querySelector('#ratingValue');
+
+        if (slider && valueDisplay) {
+            slider.oninput = function() {
+                valueDisplay.textContent = this.value;
+                updateRatingColor(this.value);
+            };
+        }
+
+        // Cover preview
+        const coverInput = document.querySelector('#coverImageUrlInput');
+        const coverPreview = document.querySelector('#coverPreview');
+        if (coverInput && coverPreview) {
+            coverInput.addEventListener('input', function() {
+                if (this.value) {
+                    coverPreview.style.display = 'block';
+                    coverPreview.querySelector('img').src = this.value;
+                } else {
+                    coverPreview.style.display = 'none';
+                }
+            });
+
+            // Show existing cover on edit
+            if (coverInput.value) {
+                coverPreview.style.display = 'block';
+                coverPreview.querySelector('img').src = coverInput.value;
+            }
+        }
+    })();
+</script>
